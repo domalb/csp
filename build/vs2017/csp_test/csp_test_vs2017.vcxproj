@@ -19,7 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\csp.cpp" />
     <ClCompile Include="..\..\..\src\csp_test.cpp" />
+    <ClCompile Include="..\..\..\src\StackWalker\StackWalker.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\cctx\cctx_architecture.h" />
+    <ClInclude Include="..\..\..\src\cctx\cctx_compiler.h" />
+    <ClInclude Include="..\..\..\src\cctx\cctx_language.h" />
+    <ClInclude Include="..\..\..\src\cctx\cctx_platform.h" />
+    <ClInclude Include="..\..\..\src\csp.h" />
+    <ClInclude Include="..\..\..\src\StackWalker\StackWalker.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
