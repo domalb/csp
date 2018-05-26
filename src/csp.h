@@ -1,17 +1,21 @@
-﻿#include "cctx/cctx_compiler.h"
+#include "cctx/cctx_compiler.h"
 #include "cctx/cctx_platform.h"
 
 #if defined CCTX_PLATFORM_WINDOWS
 #	define CSP_STACK_WALKER
 #elif (defined CCTX_PLATFORM_ANDROID || defined CCTX_PLATFORM_LINUX)
 #    define CSP_DL
-#elif (defined CCTX_PLATFORM_MACOS)
+#elif (defined CCTX_PLATFORM_MAC)
 #    define CSP_NS
 #endif
 
 #if defined CSP_STACK_WALKER
 #	include "StackWalker/StackWalker.h"
 #elif defined CSP_DL
+#endif
+
+#ifndef NULL
+#   define NULL 0
 #endif
 
 class SymbolPrinter;

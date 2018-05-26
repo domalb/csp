@@ -1,4 +1,4 @@
-﻿#include "csp.h"
+#include "csp.h"
 
 #include <iostream>
 
@@ -65,6 +65,13 @@ int main()
 	}
 
 	return 0;
+}
+
+#elif defined CSP_NS
+
+int _main(int argc, const char** argv)
+{
+    return 0;
 }
 
 #endif
