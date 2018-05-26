@@ -24,10 +24,10 @@ void CspCallStack::SetNs()
     m_ns_lines = (__bridge_retained void*)lines;
 }
 
-void SymbolPrinter::PrintCallStack(const CspCallStack& a_stack)
+void SymbolPrinter::PrintCallStack(const CspCallStack* a_stack)
 {
     NSArray<NSString*>* lines = nil;
-    if (a_stack.m_ns_lines == NULL)
+    if (a_stack == NULL)
     {
         lines = [NSThread callStackSymbols];
     }

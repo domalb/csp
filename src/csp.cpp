@@ -138,16 +138,22 @@ bool SymbolPrinter::Initialize(CspSymbolPrinterOutput a_output, void* a_user_dat
 
 #ifndef CSP_NS
 
-void SymbolPrinter::PrintCallStack(const CspCallStack& a_stack)
+void SymbolPrinter::PrintCallStack(const CspCallStack* a_stack)
 {
 #if defined CSP_STACK_WALKER
 
-	HANDLE stack_thread = a_stack.m_thread;
-	CONTEXT* stack_context = (CONTEXT*)a_stack.m_context;
+	HANDLE stack_thread = NULL;
+	CONTEXT* stack_context = NULL;
+
 	if(stack_thread == NULL)
 	{
 		stack_thread = GetCurrentThread();
 		stack_context = NULL;
+	}
+	else
+	{
+		stack_thread = a_stack->m_thread;
+		stack_context = a_stack->m_context;
 	}
 	m_walker.ShowCallstack(stack_thread, stack_context, NULL, m_output_user_data);
 
@@ -188,21 +194,33 @@ void SymbolPrinter::PrintCallStack(const CspCallStack& a_stack)
 			free(demangled_name);
 		}
 	}
-    
+
 #elif defined CSP_BACKTRACE
-    
-    CspCallStack local_stack;
-    CspCallStack* stack = &CspCallStack;
-    char** symbols = backtrace_symbols(a_stack.m_entries, a_stack.m_entries_count);
-    for(int i = 0; i < a_stack.m_entries_count; ++i)
-    {
-        const char* symbol = symbols[i];
-        if (symbol != NULL)
-        {
-            (*m_output)(symbol, m_output_user_data);
-        }
-    }
-    free(symbols);
+
+	CspCallStack local_stack;
+	CspCallStack* stack = NULL;
+	if (a_stack == NULL)
+	{
+		stack = local_stack;
+		local_stack.SetBacktrace();
+	}
+	else
+	{
+		stack = a_stack;
+	}
+	char** symbols = backtrace_symbols(stack->m_entries, stack->m_entries_count);
+	if (symbols != NULL)
+	{
+		for (int i = 0; i < stack->m_entries_count; ++i)
+		{
+			const char* symbol = symbols[i];
+			if (symbol != NULL)
+			{
+				(*m_output)(symbol, m_output_user_data);
+			}
+		}
+		free(symbols);
+	}
 
 #endif
 }

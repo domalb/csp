@@ -44,7 +44,7 @@ LONG WINAPI csp_test_exception_filter(EXCEPTION_POINTERS* pExp, DWORD dwExpCode)
 	stack.SetWin32(GetCurrentThread(), pExp->ContextRecord);
 	SymbolPrinter printer;
 	printer.Initialize(&csp_test_output);
-	printer.PrintCallStack(stack);
+	printer.PrintCallStack(&stack);
 
 	return EXCEPTION_EXECUTE_HANDLER;
 }
