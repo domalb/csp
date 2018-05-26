@@ -1,9 +1,12 @@
-﻿#include "csp.h"
+#include "csp.h"
 
 #if defined CSP_DL
 #	include <unwind.h>
 #	include <dlfcn.h>
 #	include <cxxabi.h>
+#elif defined CSP_BACKTRACE
+#   include <execinfo.h>
+#   include <stdlib.h>
 #endif
 
 // Windows
@@ -12,6 +15,8 @@
 //	http://stackoverflow.com/questions/8115192/android-ndk-getting-the-backtrace
 // Linux
 //	https://oroboro.com/printing-stack-traces-file-line/
+// MacOS BSD
+// https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man3/backtrace.3.html
 // iOS
 //	http://iosdevelopertips.com/debugging/debugging-trick-to-dump-call-stack-of-current-thread.html
 //	https://github.com/gustafsson/backtrace/blob/master/README.md
@@ -70,9 +75,21 @@ CspCallStack::CspCallStack()
 	, m_context(NULL)
 #elif defined CSP_DL
 	: m_dl_entries_count(0)
+#elif defined CSP_BACKTRACE
+    : m_entries_count(entries_count_max + 1)
+#elif defined CSP_NS
+    : m_ns_lines(NULL)
 #endif
 {
 }
+
+#ifndef CSP_NS
+
+CspCallStack::~CspCallStack()
+{
+}
+
+#endif // CSP_NS
 
 #if defined CSP_STACK_WALKER
 
@@ -88,6 +105,13 @@ void CspCallStack::SetDl()
 {
 	m_dl_entries_count = 0;
 	_Unwind_Backtrace(&CspDlUnwindCallStack, this);
+}
+
+#elif defined CSP_BACKTRACE
+
+void CspCallStack::SetBacktrace()
+{
+    m_entries_count = backtrace(m_entries, entries_count_max);
 }
 
 #endif
@@ -111,6 +135,8 @@ bool SymbolPrinter::Initialize(CspSymbolPrinterOutput a_output, void* a_user_dat
 
 	return true;
 }
+
+#ifndef CSP_NS
 
 void SymbolPrinter::PrintCallStack(const CspCallStack& a_stack)
 {
@@ -162,6 +188,23 @@ void SymbolPrinter::PrintCallStack(const CspCallStack& a_stack)
 			free(demangled_name);
 		}
 	}
+    
+#elif defined CSP_BACKTRACE
+    
+    CspCallStack local_stack;
+    CspCallStack* stack = &CspCallStack;
+    char** symbols = backtrace_symbols(a_stack.m_entries, a_stack.m_entries_count);
+    for(int i = 0; i < a_stack.m_entries_count; ++i)
+    {
+        const char* symbol = symbols[i];
+        if (symbol != NULL)
+        {
+            (*m_output)(symbol, m_output_user_data);
+        }
+    }
+    free(symbols);
 
 #endif
 }
+
+#endif // CSP_NS

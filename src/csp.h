@@ -5,8 +5,10 @@
 #	define CSP_STACK_WALKER
 #elif (defined CCTX_PLATFORM_ANDROID || defined CCTX_PLATFORM_LINUX)
 #    define CSP_DL
-#elif (defined CCTX_PLATFORM_MAC)
+#elif (defined CCTX_PLATFORM_IOS) // Works on MacOS too
 #    define CSP_NS
+#elif (defined CCTX_PLATFORM_MAC)
+#    define CSP_BACKTRACE
 #endif
 
 #if defined CSP_STACK_WALKER
@@ -45,11 +47,14 @@ class CspCallStack
 {
 public:
 
-	CspCallStack();
+    CspCallStack();
+    ~CspCallStack();
 #if defined CSP_STACK_WALKER
 	void SetWin32(HANDLE a_thread = NULL, CONTEXT* m_context = NULL);
 #elif defined CSP_DL
     void SetDl();
+#elif defined CSP_BACKTRACE
+    void SetBacktrace();
 #elif defined CSP_NS
     void SetNs();
 #endif
@@ -61,6 +66,12 @@ public:
 	size_t m_dl_entries_count;
 	enum { dl_entries_count_max = 100 };
 	void* m_dl_entries[dl_entries_count_max];
+#elif defined CSP_BACKTRACE
+    int m_entries_count;
+    enum { entries_count_max = 100 };
+    void* m_entries[entries_count_max];
+#elif defined CSP_NS
+    void* m_ns_lines;
 #endif
 };
 
@@ -72,7 +83,7 @@ public:
 
 	SymbolPrinter();
 	bool Initialize(CspSymbolPrinterOutput a_output, void* a_user_data = NULL);
-	void PrintCallStack(const CspCallStack& stack = CspCallStack());
+	void PrintCallStack(const CspCallStack* a_stack = NULL);
 
 private:
 

@@ -67,10 +67,35 @@ int main()
 	return 0;
 }
 
+#elif defined CSP_BACKTRACE
+
+void csp_backtrace_test_output(const char* a_text, void* a_user_data)
+{
+    std::cout << a_text << std::endl;
+}
+
+int main(int argc, const char * argv[])
+{
+    SymbolPrinter printer;
+    printer.Initialize(&csp_backtrace_test_output);
+    printer.PrintCallStack();
+    
+    return 0;
+}
+
 #elif defined CSP_NS
 
-int _main(int argc, const char** argv)
+void csp_ns_test_output(const char* a_text, void* a_user_data)
 {
+    std::cout << a_text << std::endl;
+}
+
+int main(int argc, const char * argv[])
+{
+    SymbolPrinter printer;
+    printer.Initialize(&csp_ns_test_output);
+    printer.PrintCallStack();
+    
     return 0;
 }
 
