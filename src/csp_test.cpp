@@ -2,12 +2,18 @@
 
 #include <iostream>
 
-#if defined CCTX_COMPILER_MSC
+int global_int = 3;
 
 void csp_test_output(const char* a_text, void* a_user_data)
 {
-	OutputDebugStringA(a_text);
+#if defined CCTX_COMPILER_MSC
+    OutputDebugStringA(a_text);
+#else
+    std::cout << a_text << std::endl;
+#endif
 }
+
+#if defined CCTX_COMPILER_MSC
 
 // Printing the call stack of the current thread
 
@@ -67,34 +73,14 @@ int main()
 	return 0;
 }
 
-#elif defined CSP_BACKTRACE
-
-void csp_backtrace_test_output(const char* a_text, void* a_user_data)
-{
-    std::cout << a_text << std::endl;
-}
+#else
 
 int main(int argc, const char * argv[])
 {
     SymbolPrinter printer;
-    printer.Initialize(&csp_backtrace_test_output);
+    printer.Initialize(&csp_test_output);
     printer.PrintCallStack();
-    
-    return 0;
-}
-
-#elif defined CSP_NS
-
-void csp_ns_test_output(const char* a_text, void* a_user_data)
-{
-    std::cout << a_text << std::endl;
-}
-
-int main(int argc, const char * argv[])
-{
-    SymbolPrinter printer;
-    printer.Initialize(&csp_ns_test_output);
-    printer.PrintCallStack();
+    printer.PrintObject(&global_int);
     
     return 0;
 }

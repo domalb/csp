@@ -3,9 +3,9 @@
 
 #if defined CCTX_PLATFORM_WINDOWS
 #	define CSP_STACK_WALKER
-#elif (defined CCTX_PLATFORM_ANDROID || defined CCTX_PLATFORM_LINUX)
+#elif (defined CCTX_PLATFORM_ANDROID || defined CCTX_PLATFORM_LINUX || defined CCTX_PLATFORM_MAC)
 #    define CSP_DL
-#elif (defined CCTX_PLATFORM_IOS) // Works on MacOS too
+#elif (defined CCTX_PLATFORM_IOS || defined CCTX_PLATFORM_MAC)
 #    define CSP_NS
 #elif (defined CCTX_PLATFORM_MAC)
 #    define CSP_BACKTRACE
@@ -14,6 +14,7 @@
 #if defined CSP_STACK_WALKER
 #	include "StackWalker/StackWalker.h"
 #elif defined CSP_DL
+#   include <stddef.h>
 #endif
 
 #ifndef NULL
@@ -63,7 +64,7 @@ public:
 	HANDLE m_thread;
 	CONTEXT* m_context;
 #elif defined CSP_DL
-	size_t m_dl_entries_count;
+	int m_dl_entries_count;
 	enum { dl_entries_count_max = 100 };
 	void* m_dl_entries[dl_entries_count_max];
 #elif defined CSP_BACKTRACE
@@ -83,7 +84,8 @@ public:
 
 	SymbolPrinter();
 	bool Initialize(CspSymbolPrinterOutput a_output, void* a_user_data = NULL);
-	void PrintCallStack(const CspCallStack* a_stack = NULL);
+    void PrintCallStack(const CspCallStack* a_stack = NULL);
+    void PrintObject(void* a_object);
 
 private:
 

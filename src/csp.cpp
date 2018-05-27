@@ -1,12 +1,16 @@
 #include "csp.h"
 
 #if defined CSP_DL
+#   include <stdlib.h>
+#   include <cxxabi.h>
+#   include <string.h>
 #	include <unwind.h>
 #	include <dlfcn.h>
-#	include <cxxabi.h>
 #elif defined CSP_BACKTRACE
-#   include <execinfo.h>
 #   include <stdlib.h>
+#   include <cxxabi.h>
+#   include <string.h>
+#   include <execinfo.h>
 #endif
 
 // Windows
@@ -159,12 +163,24 @@ void SymbolPrinter::PrintCallStack(const CspCallStack* a_stack)
 
 #elif defined CSP_DL
 
-	for(size_t i = 0; i < a_stack.m_dl_entries_count; ++i)
+    CspCallStack local_stack;
+    const CspCallStack* stack = NULL;
+    if (a_stack == NULL)
+    {
+        stack = &local_stack;
+        local_stack.SetDl();
+    }
+    else
+    {
+        stack = a_stack;
+    }
+
+    for(size_t i = 0; i < stack->m_dl_entries_count; ++i)
 	{
-		const void* address = a_stack.m_dl_entries[i];
+		const void* address = stack->m_dl_entries[i];
 //		const char* module_name = "";
 		const char* symbol_name = "";
-		const char* demangled_name = NULL;
+        char* demangled_name = NULL;
 
 		Dl_info dl_info;
 		if (dladdr(address, &dl_info) != 0)
@@ -187,7 +203,7 @@ void SymbolPrinter::PrintCallStack(const CspCallStack* a_stack)
 			}
 		}
 
-		(*m_output)(name, m_output_user_data);
+		(*m_output)(symbol_name, m_output_user_data);
 
 		if (demangled_name != NULL)
 		{
@@ -198,10 +214,10 @@ void SymbolPrinter::PrintCallStack(const CspCallStack* a_stack)
 #elif defined CSP_BACKTRACE
 
 	CspCallStack local_stack;
-	CspCallStack* stack = NULL;
+	const CspCallStack* stack = NULL;
 	if (a_stack == NULL)
 	{
-		stack = local_stack;
+		stack = &local_stack;
 		local_stack.SetBacktrace();
 	}
 	else
@@ -216,7 +232,49 @@ void SymbolPrinter::PrintCallStack(const CspCallStack* a_stack)
 			const char* symbol = symbols[i];
 			if (symbol != NULL)
 			{
-				(*m_output)(symbol, m_output_user_data);
+                const char* func = symbol;
+                // skip index
+                while(*func != ' ') func++;
+                // skip spaces
+                while(*func == ' ') func++;
+                // skip module
+                while(*func != ' ') func++;
+                // skip spaces
+                while(*func == ' ') func++;
+                // skip address
+                while(*func != ' ') func++;
+                // skip spaces
+                while(*func == ' ') func++;
+                // get function end
+                const char* func_end = func;
+                while((*func_end != ' ') && (*func_end != 0)) func_end++;
+                // copy function
+                static const int func_buff_length = 256;
+                char func_buff [func_buff_length];
+                int func_length = int(func_end - func);
+                if (func_length >= func_buff_length)
+                {
+                    func_length = func_buff_length - 1;
+                }
+                strncpy(func_buff, func, func_length);
+                func_buff[func_length] = 0;
+                
+                // Demangle function
+                const char* func_displayed = func_buff;
+                int demangle_status = 0;
+                char* demangled = __cxxabiv1::__cxa_demangle(func_buff, 0, 0, &demangle_status);
+                if ((demangled != NULL) && (demangle_status == 0))
+                {
+                    func_displayed = demangled;
+                }
+
+				(*m_output)(func_displayed, m_output_user_data);
+                
+                if (demangled != NULL)
+                {
+                    free(demangled);
+                }
+
 			}
 		}
 		free(symbols);
@@ -226,3 +284,19 @@ void SymbolPrinter::PrintCallStack(const CspCallStack* a_stack)
 }
 
 #endif // CSP_NS
+
+void SymbolPrinter::PrintObject(void* a_object)
+{
+#if defined CSP_DL
+    
+    Dl_info dl_info;
+    if (dladdr(a_object, &dl_info) != 0)
+    {
+        if (dl_info.dli_sname != NULL)
+        {
+            (*m_output)(dl_info.dli_sname, m_output_user_data);
+        }
+    }
+    
+#endif
+}

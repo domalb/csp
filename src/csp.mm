@@ -33,7 +33,7 @@ void SymbolPrinter::PrintCallStack(const CspCallStack* a_stack)
     }
     else
     {
-        lines = (__bridge NSArray<NSString*>*)a_stack.m_ns_lines;
+        lines = (__bridge NSArray<NSString*>*)a_stack->m_ns_lines;
     }
     if (lines != nil)
     {
