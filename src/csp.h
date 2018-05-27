@@ -48,16 +48,16 @@ class CspCallStack
 {
 public:
 
-    CspCallStack();
-    ~CspCallStack();
+	CspCallStack();
+	~CspCallStack();
 #if defined CSP_STACK_WALKER
 	void SetWin32(HANDLE a_thread = NULL, CONTEXT* m_context = NULL);
 #elif defined CSP_DL
-    void SetDl();
+	void SetDl();
 #elif defined CSP_BACKTRACE
-    void SetBacktrace();
+	void SetBacktrace();
 #elif defined CSP_NS
-    void SetNs();
+	void SetNs();
 #endif
 
 #if defined CSP_STACK_WALKER
@@ -68,11 +68,11 @@ public:
 	enum { dl_entries_count_max = 100 };
 	void* m_dl_entries[dl_entries_count_max];
 #elif defined CSP_BACKTRACE
-    int m_entries_count;
-    enum { entries_count_max = 100 };
-    void* m_entries[entries_count_max];
+	int m_entries_count;
+	enum { entries_count_max = 100 };
+	void* m_entries[entries_count_max];
 #elif defined CSP_NS
-    void* m_ns_lines;
+	void* m_ns_lines;
 #endif
 };
 
@@ -84,8 +84,8 @@ public:
 
 	SymbolPrinter();
 	bool Initialize(CspSymbolPrinterOutput a_output, void* a_user_data = NULL);
-    void PrintCallStack(const CspCallStack* a_stack = NULL);
-    void PrintObject(void* a_object);
+	void PrintCallStack(const CspCallStack* a_stack = NULL);
+	void PrintObject(void* a_object);
 
 private:
 

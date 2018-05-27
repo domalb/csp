@@ -4,14 +4,12 @@
 
 int global_int = 3;
 
+#if defined CCTX_COMPILER_MSC
 void csp_test_output(const char* a_text, void* a_user_data)
 {
-#if defined CCTX_COMPILER_MSC
-    OutputDebugStringA(a_text);
-#else
-    std::cout << a_text << std::endl;
-#endif
+	OutputDebugStringA(a_text);
 }
+#endif
 
 #if defined CCTX_COMPILER_MSC
 
@@ -22,6 +20,7 @@ void csp_test_cur_thread_func1(void* a_arg)
 	SymbolPrinter printer;
 	printer.Initialize(&csp_test_output);
 	printer.PrintCallStack();
+	printer.PrintObject(&global_int);
 }
 
 void csp_test_cur_thread_func2(int* a_arg)
@@ -77,12 +76,11 @@ int main()
 
 int main(int argc, const char * argv[])
 {
-    SymbolPrinter printer;
-    printer.Initialize(&csp_test_output);
-    printer.PrintCallStack();
-    printer.PrintObject(&global_int);
-    
-    return 0;
+	SymbolPrinter printer;
+	printer.PrintCallStack();
+	printer.PrintObject(&global_int);
+
+	return 0;
 }
 
 #endif
