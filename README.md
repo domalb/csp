@@ -1,4 +1,4 @@
-# C Symbol Printer 5CSP)
+# C Symbol Printer (CSP)
 
 Get text from C++ call stack and globals.
 Works on Windows, MacOSX, Linux, iOS and Android
